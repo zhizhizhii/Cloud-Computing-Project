@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhi.dao.SaleMapper">
+
+    <select id="queryTotalByMonth" resultType="Sale">
+        select sum(o_num*price) total,year(o_time) year,month(o_time) month
+        from purchase
+        group by year(o_time),month(o_time)
+   </select>
+
+</mapper>

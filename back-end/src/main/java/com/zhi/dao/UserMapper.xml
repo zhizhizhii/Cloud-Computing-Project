@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhi.dao.UserMapper">
+
+    <select id="queryUser" resultType="User" parameterType="String">
+select c_id,c_name,c_sex,concat_ws('|', collect_set(t4.data_dt)) data_dt
+from (
+select
+    c_id,c_name,c_sex,
+    data_dt
+from
+    (select
+    c_id,c_name,c_sex,
+    data_dt,
+    datediff(data_dt,lag2) lag2_diff,
+    datediff(data_dt,lag1) lag1_diff,
+    datediff(data_dt,lead1) lead1_diff,
+    datediff(data_dt,lead2) lead2_diff
+from
+    (select
+    c_id,c_name,c_sex,
+    data_dt,
+    lag(data_dt,2,'1970-01') over(partition by c_id order by data_dt) lag2,
+    lag(data_dt,1,'1970-01') over(partition by c_id order by data_dt) lag1,
+    lead(data_dt,1,'1970-01') over(partition by c_id order by data_dt) lead1,
+    lead(data_dt,2,'1970-01') over(partition by c_id order by data_dt) lead2
+from
+    (select c_id,c_name,c_sex,o_time data_dt
+from pur
+    where year(o_time) = #{year}
+    )t1)t2)t3
+where
+    (lag2_diff=2 and lag1_diff=1)
+    or
+    (lag1_diff=1 and lead1_diff=-1)
+    or
+    (lead1_diff=-1 and lead2_diff=-2) )t4
+    group by c_id,c_name,c_sex
+   </select>
+
+
+
+</mapper>

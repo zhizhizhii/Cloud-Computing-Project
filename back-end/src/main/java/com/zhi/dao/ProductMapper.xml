@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhi.dao.ProductMapper">
+
+    <select id="queryTopProduct" resultType="Product">
+        select sum(o_num) s_vol,p_id,p_name,p_category,cost,price
+        from purchase
+        group by p_id,p_name,p_category,cost,price
+        order by s_vol
+        desc limit #{num}
+   </select>
+
+    <select id="queryTopProductByCategory" resultType="Product">
+        select p_category,p_id,p_name,cost,price,s_vol
+        from(select p_category,p_id,p_name,cost,price,s_vol,
+                rank() over(partition by p_category order by s_vol desc) r
+             from(  select p_category,p_id,p_name,cost,price,sum(o_num) s_vol
+                    from purchase
+                    where p_category is not null
+                    group by p_category,p_id,p_name,cost,price) t1) t2
+        where t2.r=1 and s_vol >1
+   </select>
+
+    <select id="getAllProduct" resultType="Product">
+        select p_id,p_name,p_category,cost,price
+        from pro
+        where ref_id between #{low} and #{high}
+   </select>
+
+    <select id="getCount" resultType="int">
+        select count(*)
+        from pro
+        where p_category = #{id}
+   </select>
+
+    <select id="getAllProductByCategory" resultType="Product">
+        select p_id,p_name,p_category,cost,price from (select row_number() over() as ref_id ,p_id,p_name,p_category,cost,price from pro
+        where p_category = #{category}
+        ) pro where ref_id between #{low} and #{high}
+   </select>
+
+    <select id="SearchProduct" resultType="Product">
+        select p_id,p_name,p_category,cost,price
+        from pro
+        where p_id = #{s} or p_name like concat_ws("%",#{s},"%")
+   </select>
+
+</mapper>

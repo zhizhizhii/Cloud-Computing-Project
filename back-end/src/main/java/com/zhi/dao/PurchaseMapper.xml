@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zhi.dao.PurchaseMapper">
+
+    <select id="queryTopProductBySex" resultType="Purchase">
+        select c_sex,s_vol,p_id,p_name,p_category,cost,price
+        from(select c_sex,s_vol,p_id,p_name,p_category,cost,price,
+        rank() over(partition by c_sex order by s_vol desc) rank
+        from
+        (select c_sex,sum(o_num) s_vol,p_id,p_name,p_category,cost,price
+        from purchase
+        group by c_sex,p_id,p_name,p_category,cost,price) t1) t2
+        where t2.rank > 0 and t2.rank &lt; 4
+   </select>
+
+</mapper>
